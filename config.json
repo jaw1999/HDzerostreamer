@@ -1,0 +1,5 @@
+{
+    "cot_ip": "127.0.0.1",
+    "cot_port": 6969,
+    "mavlink_port": 5760
+}

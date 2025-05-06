@@ -1,0 +1,26 @@
+[Unit]
+Description=TBS Control Panel Service
+After=network.target
+
+[Service]
+Type=simple
+User=user
+Group=user
+WorkingDirectory=/home/user/tbs_converter
+Environment=PYTHONUNBUFFERED=1
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=HOME=/home/user
+
+# Start both services
+ExecStartPre=/home/user/tbs_converter/video/mediamtx
+ExecStart=/usr/bin/python3 src/server.py
+
+Restart=always
+RestartSec=5
+
+# Add permissions settings
+StandardOutput=append:/var/log/tbs-control.log
+StandardError=append:/var/log/tbs-control.error.log
+
+[Install]
+WantedBy=multi-user.target 

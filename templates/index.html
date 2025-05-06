@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Control Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --accent-color: #4CAF50;
+            --border-color: #333333;
+            --danger-color: #f44336;
+            --input-bg: #2d2d2d;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 16px;
+        }
+        
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+        
+        .card { 
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color); 
+            padding: 20px; 
+            margin-bottom: 16px; 
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .status { 
+            display: inline-block; 
+            width: 8px; 
+            height: 8px; 
+            border-radius: 50%; 
+            margin-right: 8px; 
+        }
+        
+        .running { background: var(--accent-color); }
+        .stopped { background: var(--danger-color); }
+        
+        .button-group {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .button { 
+            flex: 1;
+            padding: 12px;
+            cursor: pointer;
+            background-color: var(--accent-color);
+            border: none;
+            color: white;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+            font-size: 14px;
+        }
+        
+        .button:hover {
+            opacity: 0.9;
+        }
+
+        .button.stop {
+            background-color: var(--danger-color);
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            cursor: pointer;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .tab.active {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        
+        .tab-content {
+            display: none;
+            height: 300px;
+            overflow-y: scroll;
+            background: var(--input-bg);
+            padding: 12px;
+            font-family: monospace;
+            font-size: 13px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+            
+            .button {
+                padding: 10px;
+            }
+            
+            .tab-content {
+                height: 200px;
+            }
+        }
+
+        .main-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .main-tab {
+            flex: 1;
+            padding: 12px;
+            cursor: pointer;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .main-tab.active {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .page-content {
+            display: none;
+        }
+        
+        .page-content.active {
+            display: block;
+        }
+
+        .error-text {
+            color: var(--danger-color);
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        /* Add styles for log entries */
+        .log-error {
+            color: var(--danger-color);
+            margin: 4px 0;
+        }
+        
+        .log-warning {
+            color: #ffd700;
+            margin: 4px 0;
+        }
+        
+        .log-info {
+            color: #4CAF50;
+            margin: 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Control Panel</h1>
+
+        <div class="main-tabs">
+            <button class="main-tab active" onclick="switchMainTab('control')">Control</button>
+            <button class="main-tab" onclick="switchMainTab('debug')">Debug</button>
+        </div>
+        
+        <div id="control-page" class="page-content active">
+            <div class="card">
+                <h2>MAVLink to CoT</h2>
+                <div class="status-indicator">
+                    <span class="status" id="mavlink-status"></span>
+                    <span id="mavlink-text"></span>
+                    <span class="error-text" id="mavlink-error"></span>
+                </div>
+                <div class="button-group">
+                    <button class="button" onclick="controlMavlink('start')">Start</button>
+                    <button class="button stop" onclick="controlMavlink('stop')">Stop</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>MediaMTX</h2>
+                <div class="status-indicator">
+                    <span class="status" id="mediamtx-status"></span>
+                    <span id="mediamtx-text"></span>
+                    <span class="error-text" id="mediamtx-error"></span>
+                </div>
+                <div class="button-group">
+                    <button class="button" onclick="controlMediaMTX('start')">Start</button>
+                    <button class="button stop" onclick="controlMediaMTX('stop')">Stop</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Configuration</h2>
+                <form id="config-form">
+                    <div class="form-group">
+                        <label>CoT IP Address</label>
+                        <input type="text" id="cot-ip" name="cot_ip" placeholder="Enter IP address">
+                    </div>
+                    <div class="form-group">
+                        <label>CoT Port</label>
+                        <input type="number" id="cot-port" name="cot_port" placeholder="Enter port number">
+                    </div>
+                    <div class="form-group">
+                        <label>MAVLink Port</label>
+                        <input type="number" id="mavlink-port" name="mavlink_port" placeholder="Enter port number">
+                    </div>
+                    <button type="submit" class="button">Save Configuration</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="debug-page" class="page-content">
+            <div class="card">
+                <h2>Debug Logs</h2>
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('cot')">CoT Logs</button>
+                    <button class="tab" onclick="switchTab('mediamtx')">MediaMTX Logs</button>
+                </div>
+                <div id="cot-logs" class="tab-content active"></div>
+                <div id="mediamtx-logs" class="tab-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchMainTab(tabName) {
+            // Update main tab buttons
+            document.querySelectorAll('.main-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.main-tab[onclick="switchMainTab('${tabName}')"]`).classList.add('active');
+            
+            // Update page content
+            document.querySelectorAll('.page-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-page`).classList.add('active');
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-logs`).classList.add('active');
+        }
+
+        function updateStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    updateStatusUI(data);
+                });
+        }
+
+        function updateStatusUI(data) {
+            // Update status indicators
+            document.getElementById('mavlink-status').className = 
+                'status ' + (data.mavlink_running ? 'running' : 'stopped');
+            document.getElementById('mavlink-text').textContent = 
+                data.mavlink_running ? 'Running' : 'Stopped';
+
+            document.getElementById('mediamtx-status').className = 
+                'status ' + (data.mediamtx_running ? 'running' : 'stopped');
+            document.getElementById('mediamtx-text').textContent = 
+                data.mediamtx_running ? 'Running' : 'Stopped';
+
+            // Only update input fields if they're not being edited
+            const cotIpInput = document.getElementById('cot-ip');
+            const cotPortInput = document.getElementById('cot-port');
+            const mavlinkPortInput = document.getElementById('mavlink-port');
+
+            if (document.activeElement !== cotIpInput) {
+                cotIpInput.value = data.config.cot_ip;
+            }
+            if (document.activeElement !== cotPortInput) {
+                cotPortInput.value = data.config.cot_port;
+            }
+            if (document.activeElement !== mavlinkPortInput) {
+                mavlinkPortInput.value = data.config.mavlink_port;
+            }
+
+            // Update error states
+            document.getElementById('mavlink-error').textContent = 
+                data.errors.mavlink || '';
+            document.getElementById('mediamtx-error').textContent = 
+                data.errors.mediamtx || '';
+        }
+
+        function updateLogs() {
+            fetch('/api/logs')
+                .then(response => response.json())
+                .then(data => {
+                    // Format CoT logs
+                    document.getElementById('cot-logs').innerHTML = data.cot
+                        .map(line => `<div class="log-entry">${line}</div>`)
+                        .join('\n');
+                    
+                    // Format MediaMTX logs
+                    document.getElementById('mediamtx-logs').innerHTML = data.mediamtx
+                        .map(line => {
+                            let className = 'log-entry';
+                            if (line.includes('🔴')) className += ' log-error';
+                            else if (line.includes('⚠️')) className += ' log-warning';
+                            else if (line.includes('ℹ️')) className += ' log-info';
+                            return `<div class="${className}">${line}</div>`;
+                        })
+                        .join('\n');
+                    
+                    // Auto-scroll logs
+                    const activeLog = document.querySelector('.tab-content.active');
+                    activeLog.scrollTop = activeLog.scrollHeight;
+                });
+        }
+
+        function controlMavlink(action) {
+            fetch(`/api/mavlink/${action}`, { method: 'POST' })
+                .then(() => updateStatus());
+        }
+
+        function controlMediaMTX(action) {
+            fetch(`/api/mediamtx/${action}`, { method: 'POST' })
+                .then(() => updateStatus());
+        }
+
+        document.getElementById('config-form').onsubmit = function(e) {
+            e.preventDefault();
+            const config = {
+                cot_ip: document.getElementById('cot-ip').value,
+                cot_port: parseInt(document.getElementById('cot-port').value),
+                mavlink_port: parseInt(document.getElementById('mavlink-port').value)
+            };
+            fetch('/api/config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(config)
+            }).then(() => updateStatus());
+        };
+
+        // Update status and logs periodically
+        setInterval(updateStatus, 1000);
+        setInterval(updateLogs, 1000);
+
+        // Initial update
+        updateStatus();
+        updateLogs();
+    </script>
+</body>
+</html> 

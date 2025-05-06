@@ -1,0 +1,19 @@
+[Unit]
+Description=MediaMTX Streaming Service
+After=network.target
+
+[Service]
+Type=simple
+User=user
+Group=user
+WorkingDirectory=/home/user/tbs_converter/video
+Environment=HOME=/home/user
+ExecStart=/home/user/tbs_converter/video/mediamtx
+Restart=always
+RestartSec=5
+
+StandardOutput=append:/var/log/mediamtx.log
+StandardError=append:/var/log/mediamtx.error.log
+
+[Install]
+WantedBy=multi-user.target 
