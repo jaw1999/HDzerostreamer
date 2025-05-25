@@ -79,9 +79,11 @@ asyncio
 MediaMTX configuration for HDMI capture:
 ```yaml
 paths:
-   hdmi_capture:
-     runOnInit: ffmpeg -f v4l2 -input_format mjpeg -framerate 60 -video_size 1280x720 -i /dev/video0>
-     runOnInitRestart: yes
+  hdmi_capture:
+    source: publisher
+    # Just copy MJPEG without re-encoding
+    runOnInit: ffmpeg -f v4l2 -input_format mjpeg -video_size 1280x720 -framerate 30 -i /dev/video0 -c copy -f rtsp rtsp://127.0.0.1:8554/hdmi_capture
+    runOnInitRestart: yes
 ```
 
 ### config.json
